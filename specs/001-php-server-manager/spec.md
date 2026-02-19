@@ -66,7 +66,7 @@ As a server administrator, I need to view file contents directly in the console 
 
 1. **Given** the user is in a directory containing a text file, **When** the user types `cat filename.txt` and presses Enter, **Then** the console displays the complete contents of the file
 2. **Given** the user types `cat` with a non-existent filename, **When** the command is submitted, **Then** the console displays an appropriate error message
-3. **Given** the user attempts to view a binary file, **When** the user types `cat binaryfile.exe`, **Then** the console displays a warning or indicates the file is not suitable for text viewing
+3. **Given** the user attempts to view a binary file, **When** the user types `cat binaryfile.exe`, **Then** the console displays the raw file contents as-is; it is the user's responsibility to know whether a file is binary or text
 
 ---
 
@@ -164,6 +164,7 @@ As a server administrator, I need to execute arbitrary commands and view system 
 2. **Given** the user wants to view PHP configuration, **When** the user types `/phpinfo` and presses Enter, **Then** the console displays the complete phpinfo() output
 3. **Given** the user is unsure what commands are available, **When** the user types `/list` and presses Enter, **Then** the console displays all available commands with brief descriptions
 4. **Given** the user has accumulated console output, **When** the user types `/clear` and presses Enter, **Then** the console output is cleared, showing only the application header and current directory
+5. **Given** the user wants to remove the tool from the server, **When** the user types `/autodestruct` and presses Enter, **Then** the script deletes itself from the server and displays a confirmation message
 
 ---
 
@@ -178,7 +179,7 @@ As a server administrator, I need to execute arbitrary commands and view system 
 - What happens when the user submits an empty command? → Ignored or displays empty output line
 - How does the system handle simultaneous requests from multiple browser sessions? → Each session has independent state and temporary file
 - What happens if a command takes a very long time to execute? → Limited by PHP's max_execution_time setting
-- How does the system handle attempts to remove or modify the PHP Server Manager script itself? → Executes immediately without confirmation; user is responsible for consequences
+- How does the system handle attempts to remove or modify the PHP Server Manager script itself? → The `/autodestruct` command is the intended way to remove the script; using `rm` on the script file also executes immediately without confirmation
 - What happens when the user session expires? → Console output temporary file is cleaned up; user must re-authenticate with password
 - How does the system handle incorrect password attempts? → Authentication failure message displayed; no access to console interface
 
@@ -197,7 +198,7 @@ As a server administrator, I need to execute arbitrary commands and view system 
 - **FR-009**: System MUST support the `ls` command to list directory contents in the current directory with detailed information including permissions, owner, size, modification date, and name (similar to `ls -la` output format), displaying all results without pagination or response time limits; implementation MUST use PHP native `scandir()` and `stat()` functions with text column alignment to avoid shell injection risks and maintain native-only constraint
 - **FR-010**: System MUST support the `cd` command to navigate between directories
 - **FR-011**: System MUST support the `cat` command to display file contents in the console
-- **FR-012**: System MUST support the `mkdir` command to create new directories
+- **FR-012**: System MUST support the `mkdir` command to create new directories, including recursive creation of nested paths (e.g., `mkdir a/b/c`) using PHP's mkdir() with the $recursive parameter set to true
 - **FR-013**: System MUST support the `rm` command to remove files and directories recursively
 - **FR-014**: System MUST support the `cp` command to copy files
 - **FR-015**: System MUST support the `ren` command to rename files and directories
@@ -208,6 +209,7 @@ As a server administrator, I need to execute arbitrary commands and view system 
 - **FR-020**: System MUST support the `/exec` command to execute arbitrary shell commands using PHP's exec() function
 - **FR-021**: System MUST support the `/download` command to initiate browser download of specified files
 - **FR-022**: System MUST support the `/phpinfo` command to display PHP configuration information
+- **FR-022a**: System MUST support the `/autodestruct` command to delete the PHP Server Manager script file itself from the server
 - **FR-023**: System MUST display PHP error messages directly in the console output when commands fail or receive invalid arguments, providing transparency and debuggability
 - **FR-024**: System MUST use only native PHP functions without external dependencies or packages
 - **FR-025**: System MUST display input field placeholder text: "Type your command or /list to list all"
@@ -227,7 +229,7 @@ As a server administrator, I need to execute arbitrary commands and view system 
 
 - **SC-001**: Users can upload the single PHP file to any server, set the password variable, and immediately access a functional file management interface after authentication
 - **SC-002**: Users can navigate the complete file system hierarchy using cd and ls commands with instant visual feedback, with directory listings showing detailed information (permissions, owner, size, modification date, name)
-- **SC-003**: All 13 supported commands execute successfully and display appropriate output or PHP error messages within 2 seconds for typical operations
+- **SC-003**: All supported commands execute successfully and display appropriate output or PHP error messages within 2 seconds for typical operations
 - **SC-004**: Console output persists across page refreshes and form submissions, with automatic cleanup handled by PHP's native session garbage collection mechanism when the PHP session expires
 - **SC-005**: The current directory context is maintained correctly across all command submissions throughout a user session
 - **SC-006**: File download operations successfully transfer files to the user's local machine without corruption
