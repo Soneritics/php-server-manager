@@ -1,0 +1,14 @@
+# IDE
+.idea/
+.vscode/
+
+# PHP
+*.log
+.env*
+console_output_*.txt
+
+# Universal
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
