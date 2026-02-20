@@ -138,6 +138,79 @@ The application operates with the permissions of the web server user:
 
 Check your user with: `/exec whoami`
 
+## Docker Container (Development/Testing)
+
+For a safe, isolated testing environment with pre-populated test data, use the Docker container:
+
+```bash
+# Build the container
+docker build -t php-server-manager .
+
+# Run the container (basic testing)
+docker run -d -p 8080:80 --name php-server-manager-test php-server-manager
+
+# Run with volume mount for live development (edit-save-refresh workflow)
+docker run -d -p 8080:80 \
+  -v ./server-manager.php:/var/www/html/server-manager.php:ro \
+  --name php-server-manager-test \
+  php-server-manager
+
+# Access in browser
+open http://localhost:8080
+```
+
+**Features**:
+- ✅ No local PHP installation required
+- ✅ Pre-populated test data (40 files, 5 directory levels)
+- ✅ Volume mount support for live code editing
+- ✅ Complete isolation from host system
+- ✅ Read-only mount (`:ro`) for safety
+
+**Development Workflow**:
+1. Start container with volume mount (see command above)
+2. Edit `server-manager.php` in your favorite editor on your local machine
+3. Save the file
+4. Refresh browser (Ctrl+R or Cmd+R)
+5. Changes appear instantly (typically within 2 seconds)
+
+**Container Management Commands**:
+```bash
+# Stop container
+docker stop php-server-manager-test
+
+# Start stopped container
+docker start php-server-manager-test
+
+# Restart container
+docker restart php-server-manager-test
+
+# View logs
+docker logs php-server-manager-test
+
+# Remove container
+docker rm -f php-server-manager-test
+```
+
+**Troubleshooting**:
+- **Port already in use**: Use different port with `-p 9090:80`
+- **Container exits immediately**: Check logs with `docker logs php-server-manager-test`
+- **Cannot access in browser**: Verify container is running with `docker ps`
+- **Volume mount not working**: Use absolute path or `./` for relative path
+
+**Build Time Expectations**:
+- First build: ~2-4 minutes (downloading base image + building)
+- Subsequent builds: ~30-60 seconds (cached layers)
+- Container startup: ~5-10 seconds
+- Total time from fresh build to browser access: **Under 5 minutes** ✓
+
+**Security Warning**: ⚠️ This container is for **development and testing only**. Do NOT use in production:
+- No SSL/HTTPS
+- No security hardening
+- Exposed default password
+- No access controls
+
+See `specs/001-docker-dev-container/quickstart.md` for detailed Docker usage instructions.
+
 ## Development
 
 ### Using PHP Built-in Server
@@ -147,7 +220,7 @@ cd /path/to/directory
 php -S localhost:8000 server-manager.php
 ```
 
-Access at: `http://localhost:8000`
+Access at: `http://localhost:8000/server-manager.php`
 
 ## Troubleshooting
 
@@ -196,6 +269,6 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Created**: 2025-01-24  
+**Created**: 2026-02-19  
 **Platform**: Unix/Linux only  
 **Dependencies**: None (native PHP only)
